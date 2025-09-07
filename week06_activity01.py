@@ -28,3 +28,29 @@ for i in range(len(matrix)):
             multiplication_result[i][j] += matrix[i][k] * matrix2[k][j]
 
 print(multiplication_result)
+
+# Part2
+# 1. use enumerate() for looping to add 5 extra point to each grade in the list, the 5th one add 10 
+grades = [88, 92, 78, 65, 50, 94]
+
+for index, grade in enumerate(grades):
+  if index == 4:  # The 5th element is at index 4
+    grades[index] = grade + 10
+  else:
+    grades[index] = grade + 5
+
+print(grades)
+
+# 2. filter out elements depend on their index:
+# use list comprehension and enumerate() to get elements with even index
+data = [100, 200, 300, 400, 500]
+
+even_index_elements = [value for index, value in enumerate(data) if index % 2 == 0]
+print(even_index_elements)
+
+# 3. create a dictionary from lists using zip()
+keys = ['name', 'age', 'grade']
+values = ['Alice', 25, 'A']
+
+my_dict = dict(zip(keys, values))
+print(my_dict)
