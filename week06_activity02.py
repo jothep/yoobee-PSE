@@ -24,6 +24,7 @@ suffix_map = {'-': 0, '': 1, '+': 2}
 sorted_students_grade = sorted(students, key=lambda x: (x['grade'][0], suffix_map.get(x['grade'][1:], 1)))
 print(sorted_students_grade)
 
+
 '''
 Sorting dictionary students by "age"
 Using function sorted, target is dictionary. 
