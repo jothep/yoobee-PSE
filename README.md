@@ -1,1 +1,1 @@
-In-class and post-class exercises for the PSD course.
+In-class and post-class exercises for the PSE course.
