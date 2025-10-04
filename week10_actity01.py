@@ -39,7 +39,7 @@ class DataAnalyzer:
             "total_length": self.get_total_length(),
             "uppercase_characters": self.count_uppercase()
         }
-    
+
     def calculate_digits_special_chars(self):
         '''
         Calculate digits and special cahrs
@@ -49,7 +49,7 @@ class DataAnalyzer:
 
         text_to_check = "".join(self.data) if isinstance(self.data, list) else self.data
 
-        for char in self.data:
+        for char in text_to_check:
             if char.isdigit():
                 digit_count += 1
             elif not char.isalnum() and not char.isspace():
