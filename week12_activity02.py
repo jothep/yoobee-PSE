@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, url_for
 
 app = Flask(__name__)
 
@@ -9,10 +9,20 @@ def index():
     <head>
         <meta charset="UTF-8">
         <title>Input the pic URL here.</title>
+        <style>
+        h1 {
+            color: blue;
+        }
+        p {
+            color: blue; font-size: 25px;
+        }
+    </style>
     </head>
     <body>
         <div class="container">
             <h1>Pic checking</h1>
+            <p style="color: red; font-size: 20px;">This line is using Inline CSS.</p>
+            <p> This line is effected by Internal CSS.</p>
             <form action="/show_image" method="GET">
                 <input type="url" name="image_url" placeholder="Pls paste the URL here" required>
                 <button type="submit">Show the picture</button>
@@ -38,6 +48,8 @@ def show_image():
     <head>
         <meta charset="UTF-8">
         <title>The picture</title>
+        <link rel="stylesheet" href="{ url_for('static', filename='styles.css') }">
+        <p> This page is using External CSS.</p>
     </head>
     <body>
         {image_display_html}
