@@ -1,6 +1,6 @@
 import os
 from google import genai
-from google.genai import types  # <-- 1. ADD THIS IMPORT
+from google.genai import types 
 from dotenv import load_dotenv
 
 def instructor_chatbot():
@@ -48,20 +48,19 @@ def instructor_chatbot():
         - A short, helpful description.
     """
     
-    # <-- 2. Configure generation settings as an object, not a dict
+    # <-- 2. Configure generation settings as an object
     generation_config_obj = types.GenerateContentConfig(
         temperature=0.8,
         max_output_tokens=4096,
     )
 
     try:
-        # <-- 3. THIS IS THE CORRECTED CALL
         # Use the dedicated 'generate_content_stream' method
         # Pass the object to the 'config' parameter
         response = client.models.generate_content_stream( 
             model='gemini-2.5-flash',
             contents=prompt,
-            config=generation_config_obj  # <-- Use 'config' not 'generation_config'
+            config=generation_config_obj 
         )
 
         print("\nHere is your itinerary from Chris:\n")
@@ -71,7 +70,7 @@ def instructor_chatbot():
             if chunk.text:
                 print(chunk.text, end='', flush=True)
         
-        print("\n") # Add a final newline for clean formatting
+        print("\n")
 
     except Exception as e:
         print(f"\nError communicating with Gemini API: {e}")
