@@ -1,97 +1,91 @@
-from google import genai
-import docx
 import os
+from google import genai
+from google.genai import types 
 from dotenv import load_dotenv
 
 def instructor_chatbot():
-    # Setup
+    # Load the API key from a .env file
     load_dotenv()
-    client = genai.Client()
-    cv_text = ""
-
-    DOCX_FILE_PATH = r"/Users/zhuxiang/Documents/Xiang-Zhu-CV-11:Sep:2025.docx"
+    api_key = os.getenv("GEMINI_API_KEY")
+    
+    if not api_key:
+        print("Error: GEMINI_API_KEY not found.")
+        print("Please create a .env file and add your API key, e.g.:")
+        print("GEMINI_API_KEY='your_api_key_here'")
+        return
 
     try:
-        if not os.path.exists(DOCX_FILE_PATH):
-            raise FileNotFoundError(f"Error: The file '{DOCX_FILE_PATH}' was not found.")
+        # Client automatically finds the GEMINI_API_KEY from the environment
+        client = genai.Client()
+    except Exception as e:
+        print(f"Error initializing API client: {e}")
+        return
 
-        doc = docx.Document(DOCX_FILE_PATH)
-        all_paras = [para.text for para in doc.paragraphs] # Get text from each paragraph
-        cv_text = "\n".join(all_paras) # Join all paragraphs into one string
+    """Command-line AI Itinerary Chatbot."""
+    print("Welcome to AI Itinerary recommender! Answer a few questions to get personalized itinerary advice.\n")
+    
+    days = input("How many (days): ")
+    location = input("Where is the destination (city name): ")
+    age = input("Enter your age: ")
+    
+    # Construct a cleaner, more direct prompt for Gemini
+    prompt = f"""
+    **Context:**
+    You are 'Chris', a professional, friendly tourist recommender and AI Itinerary expert. 
+    Your task is to provide a high-quality itinerary based on the user's data.
 
-        if not cv_text.strip():
-            print("Error: The .docx file is empty or contains no readable text.")
-            exit()
-
-        # Prompt
-        prompt = f"""
-        **Context:**
-        You are an expert HR Co-Pilot. Your task is to analyze the following CV and provide a comprehensive, factual summary for a busy hiring manager.
-
-        **CV Text:**
-        {cv_text}
-
-        ---
-
-    **Positive Instructions (What to do):**
-    1.  Analyze the provided CV Text.
-    2.  Structure your output *exactly* according to the "Analysis Report" template below.
-    3.  Be concise, factual, and professional.
-    4.  Extract information *only* from the text.
-    5.  Calculate total *relevant* experience based on the roles listed.
-    6.  Identify key *technical* skills (like languages, frameworks, software) and *soft* skills (like leadership, communication) that are *explicitly mentioned* or *strongly implied* by job descriptions.
-    7.  Identify potential red flags, such as significant employment gaps (over 6 months) or frequent job changes (e.g., multiple roles under 1 year).
-
-    **Negative Instructions (What to AVOID):**
-    1.  **DO NOT** use subjective or overly enthusiastic language (e.g., "amazing candidate," "perfect fit," "highly recommend"). Stick to factual analysis.
-    2.  **DO NOT** invent or infer skills, experiences, or qualifications that are not present in the CV.
-    3.  **DO NOT** include personal, non-professional information (e.g., hobbies, marital status, home address) even if it's in the CV. Only extract Name, Email, and Phone.
-    4.  **DO NOT** provide a summary or opinion *outside* of the requested structure.
-    5.  **DO NOT** write long narrative paragraphs. Use bullet points as shown in the template.
+    **User Details:**
+    - Duration: {days} days
+    - Destination: {location}
+    - Traveler's Age: {age} years
 
     ---
 
-    **Analysis Report Template (Follow this structure exactly):**
+    **Positive Instructions (What to do):**
+    1.  Start your response with a friendly, brief greeting.
+    2.  Give a structured itinerary, with each day listed separately (e.g., "Day 1: [Theme]").
+    3.  Provide a maximum of two (2) activities per day to keep it simple.
+    4.  Keep all descriptions very short (1-2 sentences).
+    5.  Suggest activities appropriate for the traveler's age.
 
-    **1. Candidate Profile:**
-    * **Name:** [Extract Name]
-    * **Contact:** [Extract Email and Phone]
-    * **Executive Summary:** [Write a 2-3 sentence summary of the candidate's professional profile and apparent seniority level (e.g., Junior, Mid-Level, Senior).]
-
-    **2. Experience Analysis:**
-    * **Total Years of Experience:** [Calculate total years of relevant experience, e.g., "Approximately 7.5 years"]
-    * **Recent Role:** [Extract the most recent Job Title and Company]
-
-    **3. Skills Matrix:**
-    * **Technical Skills:** [List 5-7 key programming languages, software, or technical frameworks.]
-    * **Soft Skills:** [List 3-5 key soft skills (e.g., "Team Leadership", "Agile Methodologies", "Client Communication").]
-
-    **4. Red Flags (If Any):**
-    * [List any potential red flags. If none, state "No significant red flags detected."]
-    """
-
-        print("===================================")
-        print("=== PROMPT SENT TO API ===")
-        print("===================================")
-        print(prompt) 
-        print("===================================")
-        print("=== WAITING FOR RESPONSE... ===")
-        print("===================================")
-
-    # Call API and Print
-        response = client.models.generate_content(
-            model='gemini-2.5-flash',
-            contents=prompt
-        )
+    **Negative Instructions (What to AVOID):**
+    1.  **DO NOT** recommend more than 2 activities per day.
+    2.  **DO NOT** write long paragraphs or introductions. Be concise.
+    3.  **DO NOT** use overly formal or robotic language. Be friendly (like 'Chris').
+    4.  **DO NOT** include specific street addresses. General areas (e.g., "Downtown", "Old Quarter") are fine.
+    5.  **DO NOT** suggest activities clearly unsuitable for the traveler's age (e.g., no intense clubs for a 15-year-old, no extreme sports for an 80-year-old).
     
-        print("\n===================================")
-        print("=== RESULTING ANALYSIS ===")
-        print("===================================")
-        print(response.text)
-        print("===================================")
+    ---
+    
+    **Itinerary Plan:**
+    """
+    
+    # <-- 2. Configure generation settings as an object
+    generation_config_obj = types.GenerateContentConfig(
+        temperature=0.8,
+        max_output_tokens=4096,
+    )
+
+    try:
+        # Use the dedicated 'generate_content_stream' method
+        # Pass the object to the 'config' parameter
+        response = client.models.generate_content_stream( 
+            model='gemini-2.5-flash',
+            contents=prompt,
+            config=generation_config_obj 
+        )
+
+        print("\nHere is your itinerary from Chris:\n")
+        
+        # Iterate through the streamed chunks
+        for chunk in response:
+            if chunk.text:
+                print(chunk.text, end='', flush=True)
+        
+        print("\n")
 
     except Exception as e:
-        print(f"An error occurred: {e}")
+        print(f"\nError communicating with Gemini API: {e}")
 
 if __name__ == "__main__":
     instructor_chatbot()
